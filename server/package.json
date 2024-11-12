@@ -1,0 +1,22 @@
+{
+  "name": "app-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "minio": "^8.0.2",
+    "multer": "^1.4.5-lts.1",
+    "react-scripts": "5.0.1"
+  }
+}
