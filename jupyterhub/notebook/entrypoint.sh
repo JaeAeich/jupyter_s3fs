@@ -16,15 +16,16 @@ wait_for_minio() {
   log "MinIO is ready!"
 }
 
-# Configure and mount S3FS
 setup_s3fs() {
   # Create credentials file
   echo "${MINIO_ACCESS_KEY}:${MINIO_SECRET_KEY}" >"${HOME}/.passwd-s3fs"
   chmod 600 "${HOME}/.passwd-s3fs"
+  # Define the specific path to mount
+  local specific_path="${BUCKET_NAME}:/${MOUNT_PATH}"
 
-  # Mount the bucket
+  # Mount the entire bucket
   log "Mounting MinIO bucket..."
-  s3fs "${BUCKET_NAME}" "${MOUNT_TARGET}" \
+  s3fs "${specific_path}" "${MOUNT_TARGET}" \
     -o url="${MINIO_ENDPOINT}" \
     -o use_path_request_style \
     -o passwd_file="${HOME}/.passwd-s3fs" \
@@ -35,7 +36,10 @@ setup_s3fs() {
     -o parallel_count=15 \
     -o multipart_size=10 \
     -o umask=0022 ||
-    log "Warning: S3FS mount failed, continuing anyway"
+    {
+      log "Error: S3FS mount failed"
+      exit 1
+    }
 }
 
 # Setup Jupyter configuration

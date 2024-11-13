@@ -1,7 +1,7 @@
 import os
 import logging
 
-from jupyterhub.auth import DummyAuthenticator
+from jupyterhub.auth import Authenticator
 from dockerspawner import DockerSpawner
 
 # Initialize Logger
@@ -13,7 +13,10 @@ c = get_config()  # noqa: F821 # type: ignore
 # ---------------------------
 # 3. Custom Authenticator
 # ---------------------------
-
+class PlatformAuthenticator(Authenticator):
+    auto_login = True
+    def authenticate(self, handler, data = None):
+        return {"name": "guest"}
 
 # ---------------------------
 # 4. JupyterHub Authentication Configuration
@@ -24,14 +27,29 @@ c = get_config()  # noqa: F821 # type: ignore
 c.JupyterHub.Authenticator.allow_all = True
 
 # Set the custom Authenticator class
-c.JupyterHub.authenticator_class = DummyAuthenticator
+c.JupyterHub.authenticator_class = PlatformAuthenticator
 
 # ---------------------------
 # 5. DockerSpawner Configuration
 # ---------------------------
 
+class S3PathSpawner(DockerSpawner):
+    def start(self):
+        """Capture the s3path from URL and pass it to the container"""
+        # Get s3path from URL parameters
+        s3path = self.handler.get_argument('mnt_path', '<ERR> No MNT path')
+
+        if s3path:
+            # Add the S3 path to environment variables that will be available in the container
+            self.environment['MOUNT_PATH'] = s3path
+    
+        # Log the S3 path (for debugging)
+        self.log.info(f"Starting notebook with S3 path: {s3path}")
+        
+        return super().start()
+
 # Use DockerSpawner to spawn user environments
-c.JupyterHub.spawner_class = DockerSpawner
+c.JupyterHub.spawner_class = S3PathSpawner
 
 # Specify the Docker image to use for user containers
 # c.DockerSpawner.image = 'jupyter/datascience-notebook:latest'
