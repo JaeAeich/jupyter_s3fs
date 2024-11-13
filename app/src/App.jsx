@@ -103,9 +103,18 @@ const App = () => {
     }
   };
 
+
   const handleExploreInJupyter = (filePath) => {
-    window.location.href = `${jupyterHubUrl}?path=${encodeURIComponent(filePath)}`;
+    // Remove the name of the file its self, need to mount task dir,
+    const pathSegments = filePath.split('/');
+    const newPath = pathSegments.slice(0, -1).join('/');
+
+    const encodedPath = encodeURIComponent(newPath);
+    const jupyterURL = `${jupyterHubUrl}/hub/spawn?mnt_path=${encodedPath}`;
+
+    window.location.href = jupyterURL;
   };
+
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
